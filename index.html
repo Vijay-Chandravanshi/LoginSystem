@@ -1,28 +1,125 @@
-<!DOCTYPE HTML>
-<HTML>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apna Toon Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+      color: #ff6600;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      padding: 30px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #ff6600;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
 <body>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyByV-vNjIwKmbp6TUh_yBFf__1XZ95YWAc",
-    authDomain: "apnatoonweb.firebaseapp.com",
-    projectId: "apnatoonweb",
-    storageBucket: "apnatoonweb.firebasestorage.app",
-    messagingSenderId: "629315632308",
-    appId: "1:629315632308:web:8ce621fd340ecf184febe1",
-    measurementId: "G-26DED030JF"
-  };
+  <h1>Welcome to Apna Toon</h1>
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
+  <div class="container">
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    
+    <button onclick="signUp()">Sign Up</button>
+    <button onclick="login()">Login</button>
+    <button onclick="logout()">Logout</button>
+
+    <p id="status"></p>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyByV-vNjIwKmbp6TUh_yBFf__1XZ95YWAc",
+      authDomain: "apnatoonweb.firebaseapp.com",
+      projectId: "apnatoonweb",
+      storageBucket: "apnatoonweb.firebasestorage.app",
+      messagingSenderId: "629315632308",
+      appId: "1:629315632308:web:4d417e8dac93671f4febe1",
+      measurementId: "G-98L564B083"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+
+    // Sign Up
+    window.signUp = async function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        document.getElementById("status").innerText = "✅ Account created & logged in!";
+      } catch (error) {
+        document.getElementById("status").innerText = "❌ Error: " + error.message;
+      }
+    };
+
+    // Login
+    window.login = async function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        document.getElementById("status").innerText = "✅ Logged in successfully!";
+      } catch (error) {
+        document.getElementById("status").innerText = "❌ Login failed: " + error.message;
+      }
+    };
+
+    // Logout
+    window.logout = async function () {
+      try {
+        await signOut(auth);
+        document.getElementById("status").innerText = "👋 Logged out successfully!";
+      } catch (error) {
+        document.getElementById("status").innerText = "❌ Logout error: " + error.message;
+      }
+    };
+
+    // Show auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("status").innerText = `👤 Logged in as: ${user.email}`;
+      } else {
+        document.getElementById("status").innerText = "🚫 Not logged in.";
+      }
+    });
+  </script>
 </body>
-</HTML>
+</html>
