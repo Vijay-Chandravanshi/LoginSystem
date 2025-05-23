@@ -3,66 +3,165 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Apna Toon Login</title>
+  <title>Apna TOON Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhai+2&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Baloo Bhai 2', sans-serif;
       padding: 40px;
-      background-color: #f0f0f0;
+      background: linear-gradient(to bottom, #fffbe6, #ffe8cc);
+      /*
+        Consider hosting 'bgTexture.png' online or replacing it with a base64 encoded image
+        if it's not loading. For now, it's commented out to ensure background gradient shows.
+      */
+      background-image: url('bgTexture.png');
+      background-size: cover;
+      background-repeat: no-repeat;
     }
-    h1 {
+    h1, h2 {
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
       text-align: center;
       color: #ff6600;
+      margin-bottom: 30px;
+      font-weight: bold;
     }
     .container {
-      max-width: 400px;
+      max-width: 500px;
       margin: auto;
       padding: 30px;
       background: white;
       border-radius: 10px;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
     }
-    input, button {
-      width: 100%;
+    input[type="email"],
+    input[type="password"],
+    input[type="text"],
+    input[type="date"] {
+      width: calc(100% - 20px);
       padding: 10px;
-      margin: 10px 0;
       border-radius: 5px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin-bottom: 20px;
     }
     button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 5px;
+      border: none;
       background-color: #ff6600;
       color: white;
       font-weight: bold;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #e65c00;
     }
     #status {
       margin-top: 10px;
       font-weight: bold;
+      text-align: center;
+      min-height: 20px;
+    }
+    .link-btn {
+      background: none;
+      color: #007bff;
+      border: none;
+      padding: 0;
+      font-size: 0.9em;
+      text-align: right;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: -5px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .social-login {
+      margin-top: 20px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+      text-align: center;
+    }
+    .google-btn {
+      background-color: #4285F4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .google-btn:hover {
+      background-color: #4C7EE8;
+    }
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      background-color: white;
+      padding: 2px;
+      border-radius: 10px;
+    }
+
+    #initialAuthSection {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    #profileCompletionSection {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
 <body>
 
-  <h1>Welcome to Apna Toon</h1>
+  <h1>Welcome to Apna TOON</h1>
+  <h2>Dil se Apna</h2>
 
   <div class="container">
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    
-    <button onclick="signUp()">Sign Up</button>
-    <button onclick="login()">Login</button>
-    <button onclick="logout()">Logout</button>
+    <div id="initialAuthSection">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button class="link-btn" onclick="forgotPassword()">Forgot Password?</button>
+      <button onclick="signUp()">Sign Up</button>
+      <br /><br />
+      <button onclick="login()">Login</button>
+      <button id="logoutButton" class="hidden" onclick="logout()">Logout</button>
+      <div class="social-login">
+        <p>Or login with:</p>
+        <button class="google-btn" onclick="signInWithGoogle()">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+          Sign in with Google
+        </button>
+      </div>
+    </div>
+
+    <div id="profileCompletionSection" class="hidden">
+      <h2>Complete Your Profile</h2>
+      <p>Please provide a name and date of birth to continue.</p>
+      <input type="text" id="userName" placeholder="Your Name" required />
+      <input type="date" id="userDob" required />
+      <button onclick="saveUserProfile()">Save Profile & Continue</button>
+    </div>
 
     <p id="status"></p>
   </div>
 
-  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
-    const firebaseConfig = {
+    // IMPORTANT: For Canvas environment, use __firebase_config and __initial_auth_token
+    // If you are deploying this outside Canvas, you can uncomment your original config.
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
       apiKey: "AIzaSyByV-vNjIwKmbp6TUh_yBFf__1XZ95YWAc",
       authDomain: "apnatoonweb.firebaseapp.com",
       projectId: "apnatoonweb",
@@ -73,53 +172,791 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    const analytics = getAnalytics(app); // Analytics might not function fully in Canvas iframe.
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Sign Up
-    window.signUp = async function () {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    // Canvas specific: Authenticate with provided token or anonymously
+    async function authenticateFirebase() {
+        if (typeof __initial_auth_token !== 'undefined') {
+            try {
+                await signInWithCustomToken(auth, __initial_auth_token);
+                console.log("Firebase Auth: Signed in with custom token.");
+            } catch (error) {
+                console.error("Firebase Auth: Error signing in with custom token:", error);
+                // Fallback to anonymous if custom token fails
+                await signInAnonymously(auth);
+                console.log("Firebase Auth: Signed in anonymously due to custom token error.");
+            }
+        } else {
+            await signInAnonymously(auth);
+            console.log("Firebase Auth: Signed in anonymously (no custom token provided).");
+        }
+    }
 
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        document.getElementById("status").innerText = "✅ Account created & logged in!";
-      } catch (error) {
-        document.getElementById("status").innerText = "❌ Error: " + error.message;
-      }
-    };
+    // Call authentication immediately
+    authenticateFirebase();
 
-    // Login
-    window.login = async function () {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
 
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        document.getElementById("status").innerText = "✅ Logged in successfully!";
-      } catch (error) {
-        document.getElementById("status").innerText = "❌ Login failed: " + error.message;
-      }
-    };
+const GAME_REDIRECT_URL = "https://vijay-chandravanshi.github.io/PlatformGame/";
+    const REDIRECT_DELAY = 1500; // milliseconds
 
-    // Logout
-    window.logout = async function () {
-      try {
-        await signOut(auth);
-        document.getElementById("status").innerText = "👋 Logged out successfully!";
-      } catch (error) {
-        document.getElementById("status").innerText = "❌ Logout error: " + error.message;
-      }
-    };
+    // --- DOM Elements ---
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const statusElement = document.getElementById("status");
+    const initialAuthSection = document.getElementById("initialAuthSection");
+    const profileCompletionSection = document.getElementById("profileCompletionSection");
+    const userNameInput = document.getElementById("userName");
+    const userDobInput = document.getElementById("userDob");
+    const logoutButton = document.getElementById("logoutButton");
 
-    // Show auth state
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("status").innerText = `👤 Logged in as: ${user.email}`;
-      } else {
-        document.getElementById("status").innerText = "🚫 Not logged in.";
-      }
+    // --- Helper Functions for UI State ---
+    function showInitialAuth() {
+        console.log("UI State: Showing initial authentication section.");
+        initialAuthSection.classList.remove('hidden');
+        profileCompletionSection.classList.add('hidden');
+        logoutButton.classList.add('hidden');
+        statusElement.innerText = "Please log in or sign up.";
+    }
+
+    function showProfileCompletion(displayName = '') {
+        console.log("UI State: Showing profile completion section.");
+        initialAuthSection.classList.add('hidden');
+        profileCompletionSection.classList.remove('hidden');
+        logoutButton.classList.add('hidden');
+        userNameInput.value = displayName;
+        statusElement.innerText = "Please complete your profile to continue.";
+    }
+
+    function resetAuthUI() {
+        console.log("UI State: Resetting authentication UI.");
+        emailInput.value = '';
+        passwordInput.value = '';
+        userNameInput.value = '';
+        userDobInput.value = '';
+        showInitialAuth();
+    }
+
+    // --- Firestore Functions ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+    async function saveUserData(userId, data) {
+        // Construct the Firestore document path for private user data in Canvas
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, userId);
+        console.log("Firestore: Attempting to save user data to path:", userDocRef.path, "with data:", data);
+        try {
+            await setDoc(userDocRef, data, { merge: true });
+            console.log("Firestore: SUCCESS - User data saved successfully for:", userId, data);
+            statusElement.innerText = "✅ Profile saved successfully!"; // More immediate feedback
+            return true;
+        } catch (error) {
+            console.error("Firestore: ERROR - Error saving user data to Firestore:", error);
+            statusElement.innerText = "❌ Error saving user data: " + error.message;
+            return false;
+        }
+    }
+
+    async function getUserData(userId) {
+        // Construct the Firestore document path for private user data in Canvas
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, userId);
+        console.log("Firestore: Attempting to retrieve user data from path:", userDocRef.path);
+        try {
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                const userData = docSnap.data();
+                console.log("Firestore: SUCCESS - Retrieved user data:", userData);
+                return userData;
+            } else {
+                console.log("Firestore: INFO - No user data found at path:", userDocRef.path);
+                return null;
+            }
+        } catch (error) {
+            console.error("Firestore: ERROR - Error loading user data from Firestore:", error);
+            statusElement.innerText = "❌ Error loading user data. Please check console.";
+            return null;
+        }
+    }
+
+    // --- Authentication State Listener (Centralized Control) ---
+    onAuthStateChanged(auth, async (user) => {
+        console.log("Auth State: onAuthStateChanged triggered. User:", user ? user.uid : "null");
+
+        if (user) {
+            statusElement.innerText = `👤 Logged in as: ${user.email || user.phoneNumber || 'User ID: ' + user.uid}`;
+            logoutButton.classList.remove('hidden');
+
+            console.log("Auth State: User logged in. Checking profile data for UID:", user.uid);
+
+            const userData = await getUserData(user.uid);
+            console.log("Auth State: Profile data retrieved for check:", userData);
+
+            // Check if profile is complete
+            const isProfileComplete = userData && userData.name && userData.name.trim() !== '' && userData.dob && userData.dob.trim() !== '';
+            console.log("Auth State: Is profile complete?", isProfileComplete);
+
+            if (isProfileComplete) {
+                console.log("Auth State: Profile is complete. Initiating redirect to game...");
+                statusElement.innerText = "✅ Profile complete. Redirecting to game...";
+                setTimeout(() => {
+                    console.log("Redirect Logic: Executing redirection now to:", GAME_REDIRECT_URL);
+                    window.location.href = GAME_REDIRECT_URL;
+                }, REDIRECT_DELAY);
+            } else {
+                console.log("Auth State: Profile incomplete or missing. Showing profile completion form.");
+                showProfileCompletion(user.displayName || '');
+            }
+        } else {
+            console.log("Auth State: User logged out. Resetting UI.");
+            resetAuthUI();
+        }
     });
+
+    // --- Email/Password Sign Up ---
+    window.signUp = async function () {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        statusElement.innerText = "❌ Please enter both email and password.";
+        return;
+      }
+
+      statusElement.innerText = "Creating account...";
+      try {
+        console.log("Sign Up: Attempting to create user with email:", email);
+        await createUserWithEmailAndPassword(auth, email, password);
+        statusElement.innerText = "✅ Account created! Checking profile...";
+        console.log("Sign Up: User created successfully. onAuthStateChanged will handle next steps.");
+      } catch (error) {
+        let errorMessage = "❌ Error: " + error.message;
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = "❌ This email is already registered. Try logging in or use a different email.";
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage = "❌ Password is too weak. Please use at least 6 characters.";
+        }
+        statusElement.innerText = errorMessage;
+        console.error("Sign Up: Error during sign up:", error);
+      }
+    };
+
+    // --- Email/Password Login ---
+    window.login = async function () {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        statusElement.innerText = "❌ Please enter both email and password.";
+        return;
+      }
+
+      statusElement.innerText = "Logging in...";
+      try {
+        console.log("Login: Attempting to sign in with email:", email);
+        await signInWithEmailAndPassword(auth, email, password);
+        statusElement.innerText = "✅ Logged in successfully! Checking profile...";
+        console.log("Login: User signed in successfully. onAuthStateChanged will handle next steps.");
+      } catch (error) {
+        let errorMessage = "❌ Login failed: " + error.message;
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          errorMessage = "❌ Invalid email or password.";
+        }
+        statusElement.innerText = errorMessage;
+        console.error("Login: Error during login:", error);
+      }
+    };
+
+    // --- Google Authentication ---
+    window.signInWithGoogle = async function () {
+        const provider = new GoogleAuthProvider();
+        statusElement.innerText = "Signing in with Google...";
+        try {
+            console.log("Google Sign-In: Attempting to sign in with Google popup.");
+            await signInWithPopup(auth, provider);
+            statusElement.innerText = "✅ Signed in with Google! Checking profile...";
+            console.log("Google Sign-In: User signed in with Google. onAuthStateChanged will handle next steps.");
+        } catch (error) {
+            console.error("Google Sign-In: Error during Google Sign-In:", error);
+            let errorMessage = "❌ Google Sign-In failed: " + error.message;
+            if (error.code === 'auth/popup-closed-by-user') {
+                errorMessage = "❌ Google Sign-In popup closed.";
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                errorMessage = "❌ Another sign-in popup is already open. Please close it.";
+            }
+            statusElement.innerText = errorMessage;
+        }
+    };
+
+    // --- Logout ---
+    window.logout = async function () {
+      statusElement.innerText = "Logging out...";
+      try {
+        console.log("Logout: Attempting to sign out.");
+        await signOut(auth);
+        statusElement.innerText = "👋 Logged out successfully!";
+        console.log("Logout: User signed out. onAuthStateChanged will handle UI reset.");
+      } catch (error) {
+        statusElement.innerText = "❌ Logout error: " + error.message;
+        console.error("Logout: Error during logout:", error);
+      }
+    };
+
+    // --- Forgot Password ---
+    window.forgotPassword = async function () {
+      const email = emailInput.value;
+
+      if (!email) {
+        statusElement.innerText = "❌ Please enter your email to reset password.";
+        return;
+      }
+
+      statusElement.innerText = "Sending password reset email...";
+      try {
+        console.log("Forgot Password: Sending reset email to:", email);
+        await sendPasswordResetEmail(auth, email);
+        statusElement.innerText = "✅ Password reset email sent! Check your inbox.";
+        console.log("Forgot Password: Reset email sent successfully.");
+      } catch (error) {
+        let errorMessage = "❌ Failed to send reset email: " + error.message;
+        if (error.code === 'auth/user-not-found') {
+          errorMessage = "❌ No account found with this email.";
+        }
+        statusElement.innerText = errorMessage;
+        console.error("Forgot Password: Error sending reset email:", error);
+      }
+    };
+
+    // --- Save User Profile (Name, DOB) ---
+    window.saveUserProfile = async function () {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            statusElement.innerText = "❌ No user logged in to save profile.";
+            console.error("Save Profile: No current user found.");
+            return;
+        }
+
+        const name = userNameInput.value.trim();
+        const dob = userDobInput.value;
+
+        if (!name || name === '' || !dob || dob === '') {
+            statusElement.innerText = "❌ Please enter both your Name and Date of Birth.";
+            console.warn("Save Profile: Name or DOB is empty.");
+            return;
+        }
+
+        statusElement.innerText = "Saving profile...";
+        console.log("Save Profile: Attempting to save profile for user:", currentUser.uid, "Name:", name, "DOB:", dob);
+        const success = await saveUserData(currentUser.uid, {
+            name: name,
+            dob: dob,
+            lastUpdated: new Date().toISOString()
+        });
+
+        if (success) {
+            console.log("Save Profile: Profile saved successfully. Triggering re-check of auth state.");
+            // Force a re-evaluation of the auth state, which will re-run onAuthStateChanged
+            // This is a common pattern to ensure the latest data is picked up.
+            // By signing out and then immediately signing back in (or just letting onAuthStateChanged re-evaluate)
+            // we ensure the profile completion check is done with the *newly saved* data.
+            // Forcing a signOut then signIn is a bit heavy, often just letting onAuthStateChanged
+            // naturally re-evaluate (which it does on data changes if observed, or on next auth event) is enough.
+            // However, to ensure it immediately re-checks the *saved* profile, we can trigger a minor auth event.
+            // A simpler way is to just let the onAuthStateChanged listener re-evaluate.
+            // Since we're calling saveUserData which is async, the onAuthStateChanged might already be
+            // re-running or will soon. The key is that `getUserData` needs to fetch the *new* data.
+            // The current flow should re-evaluate correctly.
+            statusElement.innerText = "✅ Profile saved! Redirecting to game...";
+            setTimeout(() => {
+                console.log("Save Profile: Initiating final redirect after profile save.");
+                window.location.href = GAME_REDIRECT_URL;
+            }, REDIRECT_DELAY);
+        } else {
+            console.error("Save Profile: Failed to save profile data.");
+            // Error message already set by saveUserData
+        }
+    };
   </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apna Toon Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhai+2&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Baloo Bhai 2', sans-serif;
+      padding: 40px;
+      background: linear-gradient(to bottom, #fffbe6, #ffe8cc);
+      /*
+        Consider hosting 'bgTexture.png' online or replacing it with a base64 encoded image
+        if it's not loading. For now, it's commented out to ensure background gradient shows.
+        background-image: url('bgTexture.png');
+      */
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+    h1, h2 {
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      color: #ff6600;
+      margin-bottom: 30px;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 30px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    input[type="email"],
+    input[type="password"],
+    input[type="text"],
+    input[type="date"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 5px;
+      border: none;
+      background-color: #ff6600;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #e65c00;
+    }
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+      min-height: 20px;
+    }
+    .link-btn {
+      background: none;
+      color: #007bff;
+      border: none;
+      padding: 0;
+      font-size: 0.9em;
+      text-align: right;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: -5px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .social-login {
+      margin-top: 20px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+      text-align: center;
+    }
+    .google-btn {
+      background-color: #4285F4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .google-btn:hover {
+      background-color: #4C7EE8;
+    }
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      background-color: white;
+      padding: 2px;
+      border-radius: 10px;
+    }
+
+    #initialAuthSection {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    #profileCompletionSection {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to Apna TOON</h1>
+  <h2>Dil se Apna</h2>
+
+  <div class="container">
+    <div id="initialAuthSection">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button class="link-btn" onclick="forgotPassword()">Forgot Password?</button>
+      <button onclick="signUp()">Sign Up</button>
+      <br /><br />
+      <button onclick="login()">Login</button>
+      <button id="logoutButton" class="hidden" onclick="logout()">Logout</button>
+      <div class="social-login">
+        <p>Or login with:</p>
+        <button class="google-btn" onclick="signInWithGoogle()">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+          Sign in with Google
+        </button>
+      </div>
+    </div>
+
+    <div id="profileCompletionSection" class="hidden">
+      <h2>Complete Your Profile</h2>
+      <p>Please provide a name and date of birth to continue.</p>
+      <input type="text" id="userName" placeholder="Your Name" required />
+      <input type="date" id="userDob" required />
+      <button onclick="saveUserProfile()">Save Profile & Continue</button>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+    // IMPORTANT: For Canvas environment, use __firebase_config and __initial_auth_token
+    // If you are deploying this outside Canvas, you can uncomment your original config.
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+      apiKey: "AIzaSyByV-vNjIwKmbp6TUh_yBFf__1XZ95YWAc",
+      authDomain: "apnatoonweb.firebaseapp.com",
+      projectId: "apnatoonweb",
+      storageBucket: "apnatoonweb.firebasestorage.app",
+      messagingSenderId: "629315632308",
+      appId: "1:629315632308:web:4d417e8dac93671f4febe1",
+      measurementId: "G-98L564B083"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app); // Analytics might not function fully in Canvas iframe.
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Canvas specific: Authenticate with provided token or anonymously
+    async function authenticateFirebase() {
+        if (typeof __initial_auth_token !== 'undefined') {
+            try {
+                await signInWithCustomToken(auth, __initial_auth_token);
+                console.log("Firebase Auth: Signed in with custom token.");
+            } catch (error) {
+                console.error("Firebase Auth: Error signing in with custom token:", error);
+                // Fallback to anonymous if custom token fails
+                await signInAnonymously(auth);
+                console.log("Firebase Auth: Signed in anonymously due to custom token error.");
+            }
+        } else {
+            await signInAnonymously(auth);
+            console.log("Firebase Auth: Signed in anonymously (no custom token provided).");
+        }
+    }
+
+    // Call authentication immediately
+    authenticateFirebase();
+
+
+const GAME_REDIRECT_URL = "https://vijay-chandravanshi.github.io/PlatformGame/";
+    const REDIRECT_DELAY = 1500; // milliseconds
+
+    // --- DOM Elements ---
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const statusElement = document.getElementById("status");
+    const initialAuthSection = document.getElementById("initialAuthSection");
+    const profileCompletionSection = document.getElementById("profileCompletionSection");
+    const userNameInput = document.getElementById("userName");
+    const userDobInput = document.getElementById("userDob");
+    const logoutButton = document.getElementById("logoutButton");
+
+    // --- Helper Functions for UI State ---
+    function showInitialAuth() {
+        console.log("UI State: Showing initial authentication section.");
+        initialAuthSection.classList.remove('hidden');
+        profileCompletionSection.classList.add('hidden');
+        logoutButton.classList.add('hidden');
+        statusElement.innerText = "Please log in or sign up.";
+    }
+
+    function showProfileCompletion(displayName = '') {
+        console.log("UI State: Showing profile completion section.");
+        initialAuthSection.classList.add('hidden');
+        profileCompletionSection.classList.remove('hidden');
+        logoutButton.classList.add('hidden');
+        userNameInput.value = displayName;
+        statusElement.innerText = "Please complete your profile to continue.";
+    }
+
+    function resetAuthUI() {
+        console.log("UI State: Resetting authentication UI.");
+        emailInput.value = '';
+        passwordInput.value = '';
+        userNameInput.value = '';
+        userDobInput.value = '';
+        showInitialAuth();
+    }
+
+    // --- Firestore Functions ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+    async function saveUserData(userId, data) {
+        // Construct the Firestore document path for private user data in Canvas
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, userId);
+        console.log("Firestore: Attempting to save user data to path:", userDocRef.path, "with data:", data);
+        try {
+            await setDoc(userDocRef, data, { merge: true });
+            console.log("Firestore: SUCCESS - User data saved successfully for:", userId, data);
+            statusElement.innerText = "✅ Profile saved successfully!"; // More immediate feedback
+            return true;
+        } catch (error) {
+            console.error("Firestore: ERROR - Error saving user data to Firestore:", error);
+            statusElement.innerText = "❌ Error saving user data: " + error.message;
+            return false;
+        }
+    }
+
+    async function getUserData(userId) {
+        // Construct the Firestore document path for private user data in Canvas
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, userId);
+        console.log("Firestore: Attempting to retrieve user data from path:", userDocRef.path);
+        try {
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                const userData = docSnap.data();
+                console.log("Firestore: SUCCESS - Retrieved user data:", userData);
+                return userData;
+            } else {
+                console.log("Firestore: INFO - No user data found at path:", userDocRef.path);
+                return null;
+            }
+        } catch (error) {
+            console.error("Firestore: ERROR - Error loading user data from Firestore:", error);
+            statusElement.innerText = "❌ Error loading user data. Please check console.";
+            return null;
+        }
+    }
+
+    // --- Authentication State Listener (Centralized Control) ---
+    onAuthStateChanged(auth, async (user) => {
+        console.log("Auth State: onAuthStateChanged triggered. User:", user ? user.uid : "null");
+
+        if (user) {
+            statusElement.innerText = `👤 Logged in as: ${user.email || user.phoneNumber || 'User ID: ' + user.uid}`;
+            logoutButton.classList.remove('hidden');
+
+            console.log("Auth State: User logged in. Checking profile data for UID:", user.uid);
+
+            const userData = await getUserData(user.uid);
+            console.log("Auth State: Profile data retrieved for check:", userData);
+
+            // Check if profile is complete
+            const isProfileComplete = userData && userData.name && userData.name.trim() !== '' && userData.dob && userData.dob.trim() !== '';
+            console.log("Auth State: Is profile complete?", isProfileComplete);
+
+            if (isProfileComplete) {
+                console.log("Auth State: Profile is complete. Initiating redirect to game...");
+                statusElement.innerText = "✅ Profile complete. Redirecting to game...";
+                setTimeout(() => {
+                    console.log("Redirect Logic: Executing redirection now to:", GAME_REDIRECT_URL);
+                    window.location.href = GAME_REDIRECT_URL;
+                }, REDIRECT_DELAY);
+            } else {
+                console.log("Auth State: Profile incomplete or missing. Showing profile completion form.");
+                showProfileCompletion(user.displayName || '');
+            }
+        } else {
+            console.log("Auth State: User logged out. Resetting UI.");
+            resetAuthUI();
+        }
+    });
+
+    // --- Email/Password Sign Up ---
+    window.signUp = async function () {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        statusElement.innerText = "❌ Please enter both email and password.";
+        return;
+      }
+
+      statusElement.innerText = "Creating account...";
+      try {
+        console.log("Sign Up: Attempting to create user with email:", email);
+        await createUserWithEmailAndPassword(auth, email, password);
+        statusElement.innerText = "✅ Account created! Checking profile...";
+        console.log("Sign Up: User created successfully. onAuthStateChanged will handle next steps.");
+      } catch (error) {
+        let errorMessage = "❌ Error: " + error.message;
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = "❌ This email is already registered. Try logging in or use a different email.";
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage = "❌ Password is too weak. Please use at least 6 characters.";
+        }
+        statusElement.innerText = errorMessage;
+        console.error("Sign Up: Error during sign up:", error);
+      }
+    };
+
+    // --- Email/Password Login ---
+    window.login = async function () {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        statusElement.innerText = "❌ Please enter both email and password.";
+        return;
+      }
+
+      statusElement.innerText = "Logging in...";
+      try {
+        console.log("Login: Attempting to sign in with email:", email);
+        await signInWithEmailAndPassword(auth, email, password);
+        statusElement.innerText = "✅ Logged in successfully! Checking profile...";
+        console.log("Login: User signed in successfully. onAuthStateChanged will handle next steps.");
+      } catch (error) {
+        let errorMessage = "❌ Login failed: " + error.message;
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          errorMessage = "❌ Invalid email or password.";
+        }
+        statusElement.innerText = errorMessage;
+        console.error("Login: Error during login:", error);
+      }
+    };
+
+    // --- Google Authentication ---
+    window.signInWithGoogle = async function () {
+        const provider = new GoogleAuthProvider();
+        statusElement.innerText = "Signing in with Google...";
+        try {
+            console.log("Google Sign-In: Attempting to sign in with Google popup.");
+            await signInWithPopup(auth, provider);
+            statusElement.innerText = "✅ Signed in with Google! Checking profile...";
+            console.log("Google Sign-In: User signed in with Google. onAuthStateChanged will handle next steps.");
+        } catch (error) {
+            console.error("Google Sign-In: Error during Google Sign-In:", error);
+            let errorMessage = "❌ Google Sign-In failed: " + error.message;
+            if (error.code === 'auth/popup-closed-by-user') {
+                errorMessage = "❌ Google Sign-In popup closed.";
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                errorMessage = "❌ Another sign-in popup is already open. Please close it.";
+            }
+            statusElement.innerText = errorMessage;
+        }
+    };
+
+    // --- Logout ---
+    window.logout = async function () {
+      statusElement.innerText = "Logging out...";
+      try {
+        console.log("Logout: Attempting to sign out.");
+        await signOut(auth);
+        statusElement.innerText = "👋 Logged out successfully!";
+        console.log("Logout: User signed out. onAuthStateChanged will handle UI reset.");
+      } catch (error) {
+        statusElement.innerText = "❌ Logout error: " + error.message;
+        console.error("Logout: Error during logout:", error);
+      }
+    };
+
+    // --- Forgot Password ---
+    window.forgotPassword = async function () {
+      const email = emailInput.value;
+
+      if (!email) {
+        statusElement.innerText = "❌ Please enter your email to reset password.";
+        return;
+      }
+
+      statusElement.innerText = "Sending password reset email...";
+      try {
+        console.log("Forgot Password: Sending reset email to:", email);
+        await sendPasswordResetEmail(auth, email);
+        statusElement.innerText = "✅ Password reset email sent! Check your inbox.";
+        console.log("Forgot Password: Reset email sent successfully.");
+      } catch (error) {
+        let errorMessage = "❌ Failed to send reset email: " + error.message;
+        if (error.code === 'auth/user-not-found') {
+          errorMessage = "❌ No account found with this email.";
+        }
+        statusElement.innerText = errorMessage;
+        console.error("Forgot Password: Error sending reset email:", error);
+      }
+    };
+
+    // --- Save User Profile (Name, DOB) ---
+    window.saveUserProfile = async function () {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            statusElement.innerText = "❌ No user logged in to save profile.";
+            console.error("Save Profile: No current user found.");
+            return;
+        }
+
+        const name = userNameInput.value.trim();
+        const dob = userDobInput.value;
+
+        if (!name || name === '' || !dob || dob === '') {
+            statusElement.innerText = "❌ Please enter both your Name and Date of Birth.";
+            console.warn("Save Profile: Name or DOB is empty.");
+            return;
+        }
+
+        statusElement.innerText = "Saving profile...";
+        console.log("Save Profile: Attempting to save profile for user:", currentUser.uid, "Name:", name, "DOB:", dob);
+        const success = await saveUserData(currentUser.uid, {
+            name: name,
+            dob: dob,
+            lastUpdated: new Date().toISOString()
+        });
+
+        if (success) {
+            console.log("Save Profile: Profile saved successfully. Triggering re-check of auth state.");
+            // Force a re-evaluation of the auth state, which will re-run onAuthStateChanged
+            // This is a common pattern to ensure the latest data is picked up.
+            // By signing out and then immediately signing back in (or just letting onAuthStateChanged re-evaluate)
+            // we ensure the profile completion check is done with the *newly saved* data.
+            // Forcing a signOut then signIn is a bit heavy, often just letting onAuthStateChanged
+            // naturally re-evaluate (which it does on data changes if observed, or on next auth event) is enough.
+            // However, to ensure it immediately re-checks the *saved* profile, we can trigger a minor auth event.
+            // A simpler way is to just let the onAuthStateChanged listener re-evaluate.
+            // Since we're calling saveUserData which is async, the onAuthStateChanged might already be
+            // re-running or will soon. The key is that `getUserData` needs to fetch the *new* data.
+            // The current flow should re-evaluate correctly.
+            statusElement.innerText = "✅ Profile saved! Redirecting to game...";
+            setTimeout(() => {
+                console.log("Save Profile: Initiating final redirect after profile save.");
+                window.location.href = GAME_REDIRECT_URL;
+            }, REDIRECT_DELAY);
+        } else {
+            console.error("Save Profile: Failed to save profile data.");
+            // Error message already set by saveUserData
+        }
+    };
+  </script>
+</body>
+</html>
+
