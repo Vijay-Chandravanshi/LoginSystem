@@ -6,6 +6,8 @@ h1,h2 {
       font-weight: bold;
 }
 body {
+    font-family: 'Baloo Bhai 2', sans-serif;
+background: linear-gradient(to bottom, #fffbe6, #ffe8cc);
     padding: 10px;
     display: flex;
     flex-direction: column;
