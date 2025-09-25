@@ -1,0 +1,88 @@
+h1,h2 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      color: #ff6600;
+      margin-bottom: 30px;
+      font-weight: bold;
+}
+body {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-image: url('./bgImage.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.container {
+    max-width: 500px;
+    margin: 10px;
+    display: block;
+    border-radius: 10px;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+button {
+    width: 100%;
+      padding: 12px;
+      border-radius: 5px;
+      border: none;
+      background-color: #ff6600;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+}
+button:hover {
+      background-color: #e65c00;
+    }
+
+input[type="email"],
+    input[type="password"],
+    input[type="text"],
+    input[type="date"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+    }
+#forgotBtn{
+    background: none;
+      color: #007bff;
+      border: none;
+      padding: 0;
+      font-size: 0.9em;
+      text-align: right;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: -5px;
+      margin-bottom: 10px;
+      display: block;
+}
+.hidden {
+    display: none;
+}
+#status {
+    text-align: center;
+}
+.google-btn {
+      background-color: #4285F4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .google-btn:hover {
+      background-color: #4C7EE8;
+    }
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      background-color: white;
+      padding: 2px;
+      border-radius: 10px;
+    }
