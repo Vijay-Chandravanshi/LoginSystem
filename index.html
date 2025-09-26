@@ -10,13 +10,21 @@
         <h1>Apna TOON</h1>
         <h2>Dil se apna</h2>
      <div class="container">
-            <div id="initialAuthentication">
-                <input type="email" name="email" id="email" placeholder="Email" required /><br><br>
-                <input type="password" name="password" id="password" placeholder="Password" required /><br><br/>
-                <button id="forgotBtn" type="submit">Forgot password</button><br /><br />
-                <button class="loginBtn" type="submit" onclick="login()">Login</button><br /><br />
-                <button class="signUp" type="submit" onclick="signUp()">Sign Up</button>
-            </div>
+            <form id="loginForm" class="authForm">
+                <input type="email" name="email" id="loginEmail" placeholder="Email" required /><br>
+                <input type="password" name="password" id="loginPassword" placeholder="Password" required /><br>
+                <button id="forgotBtn">Forgot password</button><br />
+                <button class="loginBtn" type="submit" onclick="login()">Login</button><br />
+            <p>Don't have an account? <a id="showSignUp" href="#">Sign Up</a></p>
+                </form>
+                <form id="signUpForm" class="authForm hidden">
+        <input type="text" name="signUpName" id="signUpName" placeholder="Full Name" required/>
+        <input type="date" id="signUpDOB" placeholder="Date of Birth" required/>
+        <input type="email" id="signUpEmail" placeholder="Email" required/>
+        <input type="password" id="signUpPassword" placeholder="Password" required/>
+      <button class="signUp" type="submit" onclick="signUp()">Sign Up</button>
+      <p>Already have an account? <a id="showLogin" href="#">Login</a></p>
+            </form>
             <div class="socialLogin">
                 <p>or login with</p>
 <button class="google-btn">
