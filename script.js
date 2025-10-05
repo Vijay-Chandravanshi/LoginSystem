@@ -111,12 +111,12 @@ let signUpDOB = document.getElementById('signUpDOB');
     try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    const additionalUserInfo = result.additionalUserInfo;
+    const isNewUser = result.additionalUserInfo ? result.additionalUserInfo.isNewUser : false;
     const userNameFromGoogle = user.displayName;
     const userEmail = user.email;
     const userDocRef = doc(db,"users",user.uid);
     const userDoc = await getDoc(userDocRef);
-    if (additionalUserInfo.isNewUser || !userDoc.exists()) {
+    if (isNewUser || !userDoc.exists()) {
         showProfileCompletion(userNameFromGoogle, userEmail);
         alert("Please, complete your profile")
     loginForm.classList.add("hidden");
