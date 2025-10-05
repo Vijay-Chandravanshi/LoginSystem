@@ -173,6 +173,29 @@ let signUpDOB = document.getElementById('signUpDOB');
         alert(error.message);
       }
     });
+let forgotPassword = document.getElementById("forgotBtn"):
+forgotPassword.addEventListener('click', async () => {
+    // 1. Get the email from the login email input field
+    const email = document.getElementById('loginEmail').value.trim(); // Ensure this ID is correct
+
+    if (!email) {
+        alert("Please enter your email in the email field first to receive the reset link.");
+        return;
+    }
+
+    try {
+        // 2. Call the Firebase API to send the email
+        await sendPasswordResetEmail(auth, email);
+        
+        // 3. Inform the user
+        alert(`Password reset email sent to ${email}! Check your inbox (and spam folder).`);
+        
+    } catch (error) {
+        // Handle specific errors (e.g., user not found)
+        alert("Error sending reset email: " + error.message);
+        console.error(error);
+    }
+});
         // Track auth state
     onAuthStateChanged(auth, (user) => {
       if (user) {
