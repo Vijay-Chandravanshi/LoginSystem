@@ -18,7 +18,7 @@ background: linear-gradient(to bottom, #fffbe6, #ffe8cc);
     background-size: cover;
 }
 .container {
-    max-width: 500px;
+    max-width: 400px;
     margin: 10px;
     display: block;
     border-radius: 10px;
@@ -88,3 +88,25 @@ input[type="email"],
       padding: 2px;
       border-radius: 10px;
     }
+    
+   .password-container {
+    position: relative;
+    display: inline;
+  }
+  .password-container input {
+    padding-right: 35px; /* space for icon */
+  }
+  .toggle-password {
+      width: auto;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 18px;
+  }
+   .toggle-password:hover {
+       background: none;
+   }
