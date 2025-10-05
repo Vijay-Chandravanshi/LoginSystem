@@ -25,8 +25,6 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstati
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Google Provider
-    const provider = new GoogleAuthProvider();
 
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -105,6 +103,65 @@ let signUpDOB = document.getElementById('signUpDOB');
         alert(error.code, error.message)
     }
   });
+    
+  const googleBtn = document.getElementById('google-btn');
+  googleBtn.addEventListener("click", async  () => {
+          // Google Provider
+    const provider = new GoogleAuthProvider();
+    try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const additionalUserInfo = result.additionalUserInfo;
+    const userNameFromGoogle = user.displayName;
+    const userEmail = user.email;
+    const userDocRef = doc(db,"users",user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (additionalUserInfo.isNewUser || !userDoc.exists()) {
+        showProfileCompletion(userNameFromGoogle, userEmail);
+        alert("Please, complete your profile")
+    loginForm.classList.add("hidden");
+    signUpForm.classList.add("hidden ");
+    document.getElementById("profileComplete").classList.remove("hidden");
+    } else {
+    alert("Google login Successful")
+    }
+    } catch (error) {
+        alert(`Google Sign-in Failed: ${error.message}`)
+    }
+  });
+  function showProfileCompletion(name, email){
+      if (name) {
+        document.getElementById("googleName").value = name;
+      }
+      document.getElementById('googleDOB').value = '';
+  };
+  let completeBtn = document.getElementById('googleDetailBtn');
+  completeBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) {
+          alert("No user signed in. try again" );
+          return
+      }
+      const name = document.getElementById('googleName').value.trim();
+      const dob = document.getElementById('googleDOB').value;
+      
+      if (!name || !dob) {
+          alert("name and Date of Birth are required ");
+          return
+      }
+      
+      try {
+          await setDoc(doc(db,"users",user.uid), {
+              name: name,
+              dob: dob,
+              email: user.email,
+              loginMethod: "Google user",
+              createdAt: new Date()
+          },{merge: true});
+      } catch (error) {
+          alert(`Error completing profile: ${error.message}`)
+      }
+  })
   
   const logoutBtn = document.getElementById('logoutBtn');
   logoutBtn.addEventListener("click", async () => {

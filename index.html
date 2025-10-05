@@ -35,10 +35,16 @@
             </form>
             <div class="socialLogin">
                 <p>or login with</p>
-<button class="google-btn">
+<button class="google-btn" id="google-btn">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
           Sign in with Google
         </button>
+        <div class="hidden" id="profileComplete">
+    <p>Complete your Profile</p><br />
+    <input type="text" id="googleName" placeholder="Full Name" required/>
+    <input type="date" id="googleDOB" placeholder="Date of Birth" required/>
+    <button id="googleDetailBtn">Complete Profile</button>
+        </div>
             </div>
             <p id="statusEl"></p>
         </div>
