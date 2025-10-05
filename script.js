@@ -120,6 +120,6 @@ let signUpDOB = document.getElementById('signUpDOB');
       if (user) {
         statusEl.innerText = `Logged in as: ${user.email}`;
       } else {
-        statusEl.innerText = "Not logged in" + error.message;
+        statusEl.innerText = "Not logged in";
       }
     });
