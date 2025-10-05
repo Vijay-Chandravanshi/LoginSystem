@@ -120,7 +120,7 @@ let signUpDOB = document.getElementById('signUpDOB');
         showProfileCompletion(userNameFromGoogle, userEmail);
         alert("Please, complete your profile")
     loginForm.classList.add("hidden");
-    signUpForm.classList.add("hidden ");
+    signUpForm.classList.add("hidden");
     document.getElementById("profileComplete").classList.remove("hidden");
     } else {
     alert("Google login Successful")
