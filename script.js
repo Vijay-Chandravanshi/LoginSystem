@@ -173,7 +173,7 @@ let signUpDOB = document.getElementById('signUpDOB');
         alert(error.message);
       }
     });
-let forgotPassword = document.getElementById("forgotBtn"):
+let forgotPassword = document.getElementById("forgotBtn");
 forgotPassword.addEventListener('click', async () => {
     // 1. Get the email from the login email input field
     const email = document.getElementById('loginEmail').value.trim(); // Ensure this ID is correct
