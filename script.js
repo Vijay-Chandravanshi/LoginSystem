@@ -76,17 +76,28 @@ let signUpDOB = document.getElementById('signUpDOB');
   signUpButton.addEventListener("click", async (e) => {
       e.preventDefault();
       let name = signUpName.value.trim();
+      if(name == "" || !name){
+          alert("Fill Name");
+          return;
+      };
+      console.
       let dob = signUpDOB.value;
+      if(dob == "" || !dob){
+          alert("Fill date of birth");
+          return;
+      };
       console.log(`Welcome to Apna TOON, ${name} and ${dob}`)
       let email = signUpEmail.value.trim();
       if (emailPattern.test(email)) {
           console.log("Email Passed " + email)
       } else {
-          console.log("Email Failed " + email)
+          console.log("Email Failed " + email);
+          return;
       };
       let password = passwordInputSignUp.value;
       if (password.length < 8 || password.length > 20) {
           console.log(password + " is invalid, atleast 8 characters required or no more than 20");
+          return;
       } else {
           console.log("Valid Password");
       };
